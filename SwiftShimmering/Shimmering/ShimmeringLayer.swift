@@ -88,76 +88,6 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setContentLayer(_ oldValue: CALayer?) {
-        guard contentLayer !== oldValue else { return }
-        // reset mask
-        self.maskLayer = nil
-        // note content layer and add for display
-        if let contentLayer = contentLayer {
-            self.sublayers = [contentLayer]
-        } else {
-            self.sublayers = nil
-        }
-        // update shimmering animation
-        self.updateShimmering()
-    }
-    
-    func setShimmering(_ oldValue: Bool) {
-        guard shimmering != oldValue else { return }
-        guard !isEndingFade else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringSpeed(_ oldValue: CGFloat) {
-        guard shimmeringSpeed != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringHighlightLength(_ oldValue: CGFloat) {
-        guard shimmeringHighlightLength != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringDirection(_ oldValue: ShimmerDirection) {
-        guard shimmeringDirection != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringPauseDuration(_ oldValue: CFTimeInterval) {
-        guard shimmeringPauseDuration != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringAnimationOpacity(_ oldValue: CGFloat) {
-        guard shimmeringAnimationOpacity != oldValue else { return }
-        self.updateMaskColors()
-    }
-    
-    func setShimmeringOpacity(_ oldValue: CGFloat) {
-        guard shimmeringOpacity != oldValue else { return }
-        self.updateMaskColors()
-    }
-    
-    func setShimmeringBeginTime(_ oldValue: CFTimeInterval) {
-        guard shimmeringBeginTime != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringBeginFadeDuration(_ oldValue: CFTimeInterval) {
-        guard shimmeringBeginFadeDuration != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setShimmeringEndFadeDuration(_ oldValue: CFTimeInterval) {
-        guard shimmeringEndFadeDuration != oldValue else { return }
-        self.updateShimmering()
-    }
-    
-    func setBounds(_ oldValue: CGRect) {
-        guard oldValue.equalTo(self.bounds) else { return }
-        self.updateShimmering()
-    }
-    
     override public func layoutSublayers() {
         super.layoutSublayers()
         let r = self.bounds
@@ -166,6 +96,90 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
         contentLayer?.position = .init(x: r.midX, y: r.midY)
         if maskLayer != nil {
             self.updateMaskLayout()
+        }
+    }
+    
+    // MARK: Internal
+    func clearMask() {
+        guard maskLayer != nil else { return }
+        let disableActions = CATransaction.disableActions()
+        CATransaction.setDisableActions(true)
+        self.maskLayer = nil
+        contentLayer?.mask = nil
+        CATransaction
+            .setDisableActions(disableActions)
+    }
+    
+    func createMaskIfNeeded() {
+        if shimmering && maskLayer == nil {
+            maskLayer = ShimmeringMaskLayer()
+            maskLayer?.delegate = self
+            contentLayer?.mask = maskLayer
+            self.updateMaskColors()
+            self.updateMaskLayout()
+        }
+    }
+    
+    func updateMaskColors() {
+        guard let maskLayer = maskLayer else { return }
+        // We create a gradient to be used as a mask.
+        // In a mask, the colors do not matter, it's the alpha that decides the degree of masking.
+        let maskedColor = UIColor(white: 1, alpha: shimmeringOpacity)
+        let unmaskedColor = UIColor(white: 1, alpha: shimmeringAnimationOpacity)
+        // Create a gradient from masked to unmasked to masked.
+        maskLayer.colors = [
+            maskedColor.cgColor,
+            unmaskedColor.cgColor,
+            maskedColor.cgColor
+        ]
+    }
+    
+    func updateMaskLayout() {
+        guard let contentLayer = contentLayer else { return }
+        guard let maskLayer = maskLayer else { return }
+        // Everything outside the mask layer is hidden, so we need to create a mask long enough for the shimmered layer to be always covered by the mask.
+        var length: CGFloat = 0
+        let contentHeight = contentLayer.bounds.height
+        let contentWidth = contentLayer.bounds.width
+        switch shimmeringDirection {
+        case .ShimmerDirectionDown,.ShimmerDirectionUp:
+            length = contentHeight
+        case .ShimmerDirectionLeft,.ShimmerDirectionRight:
+            length = contentWidth
+        }
+        // extra distance for the gradient to travel during the pause.
+        let extraDistance: CGFloat = length + shimmeringSpeed * CGFloat(shimmeringPauseDuration)
+        
+        // compute how far the shimmering goes
+        let fullShimmerLength: CGFloat = length * 3.0 + extraDistance
+        let travelDistance: CGFloat = length * 2 + extraDistance
+        
+        // position the gradient for the desired width
+        let highlightOutsideLength: CGFloat = (1 - shimmeringHighlightLength) / 2
+        let locs = [
+            highlightOutsideLength,
+            0.5,
+            1 - highlightOutsideLength
+        ]
+        maskLayer.locations = locs.map { value in
+            return NSNumber(value: Double(value))
+        }
+        let startPoint: CGFloat = (length + extraDistance) / fullShimmerLength
+        let endPoint: CGFloat = travelDistance / fullShimmerLength
+        
+        // position for the start of the animation
+        maskLayer.anchorPoint = .zero
+        switch shimmeringDirection {
+        case .ShimmerDirectionDown,.ShimmerDirectionUp:
+            maskLayer.startPoint = .init(x: 0, y: startPoint)
+            maskLayer.endPoint = .init(x: 0, y: endPoint)
+            maskLayer.position = .init(x: 0, y: -travelDistance)
+            maskLayer.bounds = .init(x: 0, y: 0, width: contentWidth, height: fullShimmerLength)
+        case .ShimmerDirectionLeft,.ShimmerDirectionRight:
+            maskLayer.startPoint = .init(x: startPoint, y: 0)
+            maskLayer.endPoint = .init(x: endPoint, y: 0)
+            maskLayer.position = .init(x: -travelDistance, y: 0)
+            maskLayer.bounds = .init(x: 0, y: 0, width: fullShimmerLength, height: contentHeight)
         }
     }
     
@@ -260,96 +274,13 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
         }
     }
     
-    func clearMask() {
-        guard maskLayer != nil else { return }
-        let disableActions = CATransaction.disableActions()
-        CATransaction.setDisableActions(true)
-        self.maskLayer = nil
-        contentLayer?.mask = nil
-        CATransaction
-            .setDisableActions(disableActions)
-    }
-    
-    func createMaskIfNeeded() {
-        if shimmering && maskLayer == nil {
-            maskLayer = ShimmeringMaskLayer()
-            maskLayer?.delegate = self
-            contentLayer?.mask = maskLayer
-            self.updateMaskColors()
-            self.updateMaskLayout()
-        }
-    }
-    
-    func updateMaskColors() {
-        guard let maskLayer = maskLayer else { return }
-        // We create a gradient to be used as a mask.
-        // In a mask, the colors do not matter, it's the alpha that decides the degree of masking.
-        let maskedColor = UIColor(white: 1, alpha: shimmeringOpacity)
-        let unmaskedColor = UIColor(white: 1, alpha: shimmeringAnimationOpacity)
-        // Create a gradient from masked to unmasked to masked.
-        maskLayer.colors = [
-            maskedColor.cgColor,
-            unmaskedColor.cgColor,
-            maskedColor.cgColor
-        ]
-    }
-    
-    func updateMaskLayout() {
-        guard let contentLayer = contentLayer else { return }
-        guard let maskLayer = maskLayer else { return }
-        // Everything outside the mask layer is hidden, so we need to create a mask long enough for the shimmered layer to be always covered by the mask.
-        var length: CGFloat = 0
-        let contentHeight = contentLayer.bounds.height
-        let contentWidth = contentLayer.bounds.width
-        switch shimmeringDirection {
-        case .ShimmerDirectionDown,.ShimmerDirectionUp:
-            length = contentHeight
-        case .ShimmerDirectionLeft,.ShimmerDirectionRight:
-            length = contentWidth
-        }
-        // extra distance for the gradient to travel during the pause.
-        let extraDistance: CGFloat = length + shimmeringSpeed * CGFloat(shimmeringPauseDuration)
-        
-        // compute how far the shimmering goes
-        let fullShimmerLength: CGFloat = length * 3.0 + extraDistance
-        let travelDistance: CGFloat = length * 2 + extraDistance
-        
-        // position the gradient for the desired width
-        let highlightOutsideLength: CGFloat = (1 - shimmeringHighlightLength) / 2
-        let locs = [
-            highlightOutsideLength,
-            0.5,
-            1 - highlightOutsideLength
-        ]
-        maskLayer.locations = locs.map { value in
-            return NSNumber(value: Double(value))
-        }
-        let startPoint: CGFloat = (length + extraDistance) / fullShimmerLength
-        let endPoint: CGFloat = travelDistance / fullShimmerLength
-        
-        // position for the start of the animation
-        maskLayer.anchorPoint = .zero
-        switch shimmeringDirection {
-        case .ShimmerDirectionDown,.ShimmerDirectionUp:
-            maskLayer.startPoint = .init(x: 0, y: startPoint)
-            maskLayer.endPoint = .init(x: 0, y: endPoint)
-            maskLayer.position = .init(x: 0, y: -travelDistance)
-            maskLayer.bounds = .init(x: 0, y: 0, width: contentWidth, height: fullShimmerLength)
-        case .ShimmerDirectionLeft,.ShimmerDirectionRight:
-            maskLayer.startPoint = .init(x: startPoint, y: 0)
-            maskLayer.endPoint = .init(x: endPoint, y: 0)
-            maskLayer.position = .init(x: -travelDistance, y: 0)
-            maskLayer.bounds = .init(x: 0, y: 0, width: fullShimmerLength, height: contentHeight)
-        }
-    }
-    
-    //CALayerDelegate
+    // MARK: CALayerDelegate
     public func action(for layer: CALayer, forKey event: String) -> CAAction? {
         // no associated actions
         return nil
     }
     
-    //CAAnimationDelegate
+    // MARK: CAAnimationDelegate
     public func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         guard let endFade = anim.value(forKey: kShimmerEndFadeAnimation) as? Bool else { return }
         if flag && endFade {
@@ -360,7 +291,7 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
         }
     }
     
-    //members
+    //MARK: Properties
     var maskLayer: ShimmeringMaskLayer?
     public var contentLayer: CALayer? {
         didSet {
@@ -445,5 +376,76 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
                 self.updateShimmering()
             }
         }
+    }
+    
+    func setContentLayer(_ oldValue: CALayer?) {
+        guard contentLayer !== oldValue else { return }
+        // reset mask
+        self.maskLayer = nil
+        // note content layer and add for display
+        if let contentLayer = contentLayer {
+            self.sublayers = [contentLayer]
+        } else {
+            self.sublayers = nil
+        }
+        // update shimmering animation
+        self.updateShimmering()
+    }
+    
+    func setShimmering(_ oldValue: Bool) {
+        guard shimmering != oldValue else { return }
+        guard !isEndingFade else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringSpeed(_ oldValue: CGFloat) {
+        guard shimmeringSpeed != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringHighlightLength(_ oldValue: CGFloat) {
+        guard shimmeringHighlightLength != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringDirection(_ oldValue: ShimmerDirection) {
+        guard shimmeringDirection != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringPauseDuration(_ oldValue: CFTimeInterval) {
+        guard shimmeringPauseDuration != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringAnimationOpacity(_ oldValue: CGFloat) {
+        guard shimmeringAnimationOpacity != oldValue else { return }
+        self.updateMaskColors()
+    }
+    
+    func setShimmeringOpacity(_ oldValue: CGFloat) {
+        guard shimmeringOpacity != oldValue else { return }
+        self.updateMaskColors()
+    }
+    
+    func setShimmeringBeginTime(_ oldValue: CFTimeInterval) {
+        guard shimmeringBeginTime != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringBeginFadeDuration(_ oldValue: CFTimeInterval) {
+        guard shimmeringBeginFadeDuration != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setShimmeringEndFadeDuration(_ oldValue: CFTimeInterval) {
+        guard shimmeringEndFadeDuration != oldValue else { return }
+        self.updateShimmering()
+    }
+    
+    func setBounds(_ oldValue: CGRect) {
+        super.bounds  = oldValue
+        guard oldValue.equalTo(self.bounds) else { return }
+        self.updateShimmering()
     }
 }
