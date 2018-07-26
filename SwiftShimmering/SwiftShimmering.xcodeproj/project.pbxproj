@@ -14,6 +14,10 @@
 		CBD626D42109B51F00C29232 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CBD626D22109B51F00C29232 /* LaunchScreen.storyboard */; };
 		CBD626DF2109B51F00C29232 /* SwiftShimmeringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626DE2109B51F00C29232 /* SwiftShimmeringTests.swift */; };
 		CBD626EA2109B51F00C29232 /* SwiftShimmeringUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626E92109B51F00C29232 /* SwiftShimmeringUITests.swift */; };
+		CBD626F92109B5F600C29232 /* Shimmering.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626F82109B5F600C29232 /* Shimmering.swift */; };
+		CBD626FB2109B64200C29232 /* ShimmeringMaskLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626FA2109B64200C29232 /* ShimmeringMaskLayer.swift */; };
+		CBD626FD2109B65300C29232 /* ShimmeringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626FC2109B65300C29232 /* ShimmeringView.swift */; };
+		CBD626FF2109B69D00C29232 /* ShimmeringLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD626FE2109B69D00C29232 /* ShimmeringLayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +51,10 @@
 		CBD626E52109B51F00C29232 /* SwiftShimmeringUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftShimmeringUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBD626E92109B51F00C29232 /* SwiftShimmeringUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftShimmeringUITests.swift; sourceTree = "<group>"; };
 		CBD626EB2109B51F00C29232 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CBD626F82109B5F600C29232 /* Shimmering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmering.swift; sourceTree = "<group>"; };
+		CBD626FA2109B64200C29232 /* ShimmeringMaskLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmeringMaskLayer.swift; sourceTree = "<group>"; };
+		CBD626FC2109B65300C29232 /* ShimmeringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmeringView.swift; sourceTree = "<group>"; };
+		CBD626FE2109B69D00C29232 /* ShimmeringLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShimmeringLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +85,7 @@
 		CBD626BD2109B51D00C29232 = {
 			isa = PBXGroup;
 			children = (
+				CBD626F72109B59500C29232 /* Shimmering */,
 				CBD626C82109B51D00C29232 /* SwiftShimmering */,
 				CBD626DD2109B51F00C29232 /* SwiftShimmeringTests */,
 				CBD626E82109B51F00C29232 /* SwiftShimmeringUITests */,
@@ -123,6 +132,17 @@
 				CBD626EB2109B51F00C29232 /* Info.plist */,
 			);
 			path = SwiftShimmeringUITests;
+			sourceTree = "<group>";
+		};
+		CBD626F72109B59500C29232 /* Shimmering */ = {
+			isa = PBXGroup;
+			children = (
+				CBD626F82109B5F600C29232 /* Shimmering.swift */,
+				CBD626FA2109B64200C29232 /* ShimmeringMaskLayer.swift */,
+				CBD626FC2109B65300C29232 /* ShimmeringView.swift */,
+				CBD626FE2109B69D00C29232 /* ShimmeringLayer.swift */,
+			);
+			path = Shimmering;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -256,8 +276,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBD626FB2109B64200C29232 /* ShimmeringMaskLayer.swift in Sources */,
+				CBD626FD2109B65300C29232 /* ShimmeringView.swift in Sources */,
 				CBD626CC2109B51D00C29232 /* ViewController.swift in Sources */,
 				CBD626CA2109B51D00C29232 /* AppDelegate.swift in Sources */,
+				CBD626FF2109B69D00C29232 /* ShimmeringLayer.swift in Sources */,
+				CBD626F92109B5F600C29232 /* Shimmering.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
