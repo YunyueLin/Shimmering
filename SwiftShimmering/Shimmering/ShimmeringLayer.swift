@@ -444,7 +444,6 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
     }
     
     func setBounds(_ oldValue: CGRect) {
-        super.bounds  = oldValue
         guard oldValue.equalTo(self.bounds) else { return }
         self.updateShimmering()
     }
