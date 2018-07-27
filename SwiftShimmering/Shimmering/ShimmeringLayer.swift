@@ -207,7 +207,8 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
             if disableActions {
                 // simply remove mask
                 self.clearMask()
-            } else {
+            }
+            else {
                 // end slide
                 var slideEndTime: CFTimeInterval = 0
                 if let slideAnimation = maskLayer.animation(forKey: kShimmerSlideAnimation) {
@@ -235,13 +236,15 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
                 // expose end time for synchronization
                 _shimmeringFadeTime = slideEndTime
             }
-        } else {
+        }
+        else {
             // fade out text, optionally animated
             var fadeOutAnimation: CABasicAnimation?
             if shimmeringBeginFadeDuration > 0 && !disableActions {
                 fadeOutAnimation = CAAnimation.fade_animation(layer: maskLayer.fadeLayer, opacity: 0, duration: shimmeringBeginFadeDuration)
                 maskLayer.fadeLayer.add(fadeOutAnimation!, forKey: kShimmerFadeAnimation)
-            } else {
+            }
+            else {
                 let innerDisableActions = CATransaction.disableActions()
                 CATransaction.setDisableActions(true)
                 maskLayer.fadeLayer.opacity = 0
@@ -260,7 +263,8 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
             if let slideAnimation = maskLayer.animation(forKey: kShimmerSlideAnimation) {
                 // ensure existing slide animation repeats
                 maskLayer.add(slideAnimation, forKey: kShimmerSlideAnimation)
-            } else {
+            }
+            else {
                 // add slide animation
                 let animation = CAAnimation.shimmer_slide_animation(duration: animationDuration, direction: shimmeringDirection)
                 animation.fillMode = kCAFillModeForwards
@@ -385,7 +389,8 @@ public class ShimmeringLayer:CALayer, CALayerDelegate,CAAnimationDelegate,Shimme
         // note content layer and add for display
         if let contentLayer = contentLayer {
             self.sublayers = [contentLayer]
-        } else {
+        }
+        else {
             self.sublayers = nil
         }
         // update shimmering animation
