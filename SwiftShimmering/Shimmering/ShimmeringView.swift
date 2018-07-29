@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ShimmeringView: UIView {
+public class ShimmeringView: UIView {
     public var contentView: UIView? {
         didSet {
             setContentView(oldValue)
